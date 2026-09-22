@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Request</title>
+    <link rel="icon" href="favicon.svg" />
+    <link rel="stylesheet" href="app.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="logo" aria-hidden="true"></span>
+          <span>Request</span>
+        </div>
+      </header>
+      <div class="workspace" id="workspace">
+        <section class="request-pane" id="requestPane">
+          <h1 class="req-title">Untitled Request</h1>
+          <div class="urlbar">
+            <div class="urlbox">
+              <div class="method" id="methodWrap">
+                <button type="button" class="method-btn GET" id="methodBtn" aria-haspopup="listbox" aria-expanded="false">GET</button>
+                <div class="method-menu" id="methodMenu" hidden role="listbox"></div>
+              </div>
+              <input id="url" type="text" placeholder="Enter request URL" spellcheck="false" autocomplete="off" />
+            </div>
+            <button type="button" id="send" title="Send (Ctrl+Enter)">Send</button>
+          </div>
+          <div class="tabs" role="tablist">
+            <button type="button" class="tab active" data-tab="params" role="tab">Params</button>
+            <button type="button" class="tab" data-tab="headers" role="tab">Headers</button>
+            <button type="button" class="tab" data-tab="body" role="tab">Body</button>
+            <label class="ssl" title="Verify TLS certificates">
+              <input type="checkbox" id="ssl" checked />
+              SSL verify
+            </label>
+          </div>
+          <div class="tab-panels">
+            <div id="panel-params" class="tab-panel active">
+              <h2>Query Params</h2>
+              <div id="params-table"></div>
+            </div>
+            <div id="panel-headers" class="tab-panel">
+              <h2>Headers</h2>
+              <div id="headers-table"></div>
+            </div>
+            <div id="panel-body" class="tab-panel">
+              <div class="body-modes">
+                <label><input type="radio" name="bodyMode" value="none" checked /> none</label>
+                <label><input type="radio" name="bodyMode" value="formdata" /> form-data</label>
+                <label><input type="radio" name="bodyMode" value="urlencoded" /> x-www-form-urlencoded</label>
+                <label><input type="radio" name="bodyMode" value="raw" /> raw</label>
+                <select id="rawType" hidden>
+                  <option value="json">JSON</option>
+                  <option value="text">Text</option>
+                  <option value="javascript">JavaScript</option>
+                  <option value="html">HTML</option>
+                  <option value="xml">XML</option>
+                </select>
+                <button type="button" id="beautify" class="linkish" hidden>Beautify</button>
+                <span id="jsonHint" class="hint-error" hidden>Invalid JSON</span>
+              </div>
+              <div id="body-none" class="body-empty">This request does not have a body</div>
+              <div id="body-formdata" class="body-fields" hidden></div>
+              <div id="body-urlencoded" class="body-fields" hidden></div>
+              <div id="body-raw" hidden>
+                <textarea id="rawBody" spellcheck="false" placeholder='{
+  "name": "ada"
+}'></textarea>
+              </div>
+            </div>
+          </div>
+        </section>
+        <div class="splitter" id="splitter" title="Drag to resize"></div>
+        <section class="response-pane">
+          <div class="resp-head">
+            <button type="button" class="resp-tab active" data-rtab="body">Body</button>
+            <button type="button" class="resp-tab" data-rtab="headers" id="respHeadersTab">Headers</button>
+            <div class="view-toggle" id="viewToggle" hidden>
+              <button type="button" data-view="pretty" class="active">Pretty</button>
+              <button type="button" data-view="raw">Raw</button>
+              <button type="button" id="copyBtn" class="linkish">Copy</button>
+            </div>
+            <div class="resp-stats" id="stats"></div>
+          </div>
+          <div id="respContent"></div>
+        </section>
+      </div>
+    </div>
+    <script src="app.js"></script>
+  </body>
+</html>
