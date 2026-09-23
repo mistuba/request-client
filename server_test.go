@@ -279,7 +279,7 @@ func TestTruncationAndUI(t *testing.T) {
 	if strings.Contains(html, "未命名请求") || !strings.Contains(html, "发送") || !strings.Contains(html, "参数") || !strings.Contains(html, `data-lang="en"`) {
 		t.Fatalf("page missing request ui: %s", page)
 	}
-	if res.Header.Get("Cache-Control") != "no-store" {
+	if res.Header.Get("Cache-Control") != "no-store" || res.Header.Get("X-Request-App") != "request-client" {
 		t.Fatal(res.Header.Get("Cache-Control"))
 	}
 }

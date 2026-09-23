@@ -10,6 +10,24 @@ import (
 	"github.com/jchv/go-webview2"
 )
 
+func detachOwnConsole() {
+	kernel32 := syscall.NewLazyDLL("kernel32.dll")
+	getList := kernel32.NewProc("GetConsoleProcessList")
+	pids := make([]uint32, 16)
+	n, _, _ := getList.Call(uintptr(unsafe.Pointer(&pids[0])), uintptr(len(pids)))
+	// 从已有的 cmd / PowerShell 启动时，控制台里还有别的进程，保留窗口。
+	// 双击打开时只有自己，脱离后关掉那个命令窗口不会结束页面。
+	if n != 1 {
+		return
+	}
+	hwnd, _, _ := kernel32.NewProc("GetConsoleWindow").Call()
+	if hwnd != 0 {
+		user32 := syscall.NewLazyDLL("user32.dll")
+		user32.NewProc("ShowWindow").Call(hwnd, 0)
+	}
+	kernel32.NewProc("FreeConsole").Call()
+}
+
 func openAppWindow(url string) error {
 	enableHighDPI()
 	width, height := defaultWindowSize()

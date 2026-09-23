@@ -38,6 +38,7 @@ func newMux() http.Handler {
 	mux.HandleFunc("POST /api/send", handleSend)
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("X-Request-App", "request-client")
 		files.ServeHTTP(w, r)
 	}))
 	return mux

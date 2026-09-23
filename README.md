@@ -90,13 +90,13 @@ go run . -open=false
 用 PowerShell 或命令提示符，进入这个目录：
 
 ```powershell
-go build -o request.exe .
+go build -ldflags "-H windowsgui" -o request.exe .
 go build -ldflags "-H windowsgui" -o request-window.exe .
 ```
 
 当前目录会得到两个文件，双击哪个就是哪种：
 
-- `request.exe`：用浏览器打开
+- `request.exe`：用浏览器打开，不留下命令窗口。关掉浏览器后程序仍在后台，再次双击会重新打开页面。结束它：`.\request.exe -stop`
 - `request-window.exe`：用自己的窗口打开。关掉窗口后程序退出
 
 也可以只编译 `request.exe`，再用参数开窗口：
@@ -118,7 +118,7 @@ go env -w GOPROXY=https://goproxy.cn,direct
 本机是 macOS 或 Linux 时，也可以直接编出 Windows 用的文件，再拷到 Windows 上双击：
 
 ```bash
-GOOS=windows GOARCH=amd64 go build -o request.exe .
+GOOS=windows GOARCH=amd64 go build -ldflags "-H windowsgui" -o request.exe .
 GOOS=windows GOARCH=amd64 go build -ldflags "-H windowsgui" -o request-window.exe .
 ```
 
