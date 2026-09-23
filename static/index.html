@@ -22,7 +22,6 @@
       </header>
       <div class="workspace" id="workspace">
         <section class="request-pane" id="requestPane">
-          <h1 class="req-title" data-i18n="untitled">未命名请求</h1>
           <div class="urlbar">
             <div class="urlbox">
               <div class="method" id="methodWrap">
@@ -33,6 +32,7 @@
             </div>
             <button type="button" id="send" data-i18n="send" data-i18n-title="sendTitle" title="发送（Ctrl+Enter）">发送</button>
           </div>
+          <div class="method-frame">
           <div class="tabs" role="tablist">
             <button type="button" class="tab active" data-tab="params" role="tab" data-i18n="params">参数</button>
             <button type="button" class="tab" data-tab="headers" role="tab" data-i18n="headers">请求头</button>
@@ -73,6 +73,7 @@
                 <textarea id="rawBody" spellcheck="false"></textarea>
               </div>
             </div>
+          </div>
           </div>
         </section>
         <div class="splitter" id="splitter" data-i18n-title="resize" title="拖动调整高度"></div>

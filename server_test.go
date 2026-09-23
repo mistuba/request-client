@@ -267,7 +267,7 @@ func TestTruncationAndUI(t *testing.T) {
 	defer res.Body.Close()
 	page, _ := io.ReadAll(res.Body)
 	html := string(page)
-	if !strings.Contains(html, "未命名请求") || !strings.Contains(html, "发送") || !strings.Contains(html, `data-lang="en"`) {
+	if strings.Contains(html, "未命名请求") || !strings.Contains(html, "发送") || !strings.Contains(html, "参数") || !strings.Contains(html, `data-lang="en"`) {
 		t.Fatalf("page missing request ui: %s", page)
 	}
 	if res.Header.Get("Cache-Control") != "no-store" {
