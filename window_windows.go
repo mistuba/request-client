@@ -11,6 +11,7 @@ import (
 )
 
 func openAppWindow(url string) error {
+	enableHighDPI()
 	w := webview2.NewWithOptions(webview2.WebViewOptions{
 		Debug:     false,
 		AutoFocus: true,
@@ -30,6 +31,26 @@ func openAppWindow(url string) error {
 	w.Navigate(url)
 	w.Run()
 	return nil
+}
+
+func enableHighDPI() {
+	user32 := syscall.NewLazyDLL("user32.dll")
+	setCtx := user32.NewProc("SetProcessDpiAwarenessContext")
+	if err := setCtx.Find(); err == nil {
+		// DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2
+		if r, _, _ := setCtx.Call(^uintptr(3)); r != 0 {
+			return
+		}
+	}
+	shcore := syscall.NewLazyDLL("shcore.dll")
+	setAwareness := shcore.NewProc("SetProcessDpiAwareness")
+	if err := setAwareness.Find(); err == nil {
+		// PROCESS_PER_MONITOR_DPI_AWARE = 2, S_OK = 0
+		if r, _, _ := setAwareness.Call(2); r == 0 {
+			return
+		}
+	}
+	user32.NewProc("SetProcessDPIAware").Call()
 }
 
 func showWindowError(text string) {
