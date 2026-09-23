@@ -58,8 +58,6 @@ winget install GoLang.Go
 - 浏览器：在系统浏览器里打开 `http://127.0.0.1:47321`
 - 窗口：程序自己的窗口。目前只有 Windows 能用
 
-页面已经打进可执行文件里。拿到文件的电脑不需要这份代码，也不需要安装 Go。程序只监听本机，别的电脑上的浏览器打不开这个地址。
-
 ### macOS、Linux
 
 在这个目录执行：
@@ -125,3 +123,5 @@ GOOS=windows GOARCH=amd64 go build -ldflags "-H windowsgui" -o request-window.ex
 ```
 
 这两个 `.exe` 在 macOS、Linux 上不能运行。下载依赖超时同样先执行 `go env -w GOPROXY=https://goproxy.cn,direct`。
+
+编出来的 `request.exe` 和 `request-window.exe` 里已经包含页面。拿到文件的电脑不需要这份代码，也不需要安装 Go。程序只监听本机，别的电脑上的浏览器打不开这个地址。
