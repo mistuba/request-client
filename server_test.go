@@ -244,6 +244,15 @@ func TestTLSToggleAndBinary(t *testing.T) {
 	}
 }
 
+func TestWindowByFileName(t *testing.T) {
+	if !windowByFileName(`C:\app\request-window.exe`) || !windowByFileName("/tmp/request-window") {
+		t.Fatal("window binary")
+	}
+	if windowByFileName(`C:\app\request.exe`) || windowByFileName("./request") {
+		t.Fatal("browser binary")
+	}
+}
+
 func TestTruncationAndUI(t *testing.T) {
 	prev := maxResponseBytes
 	maxResponseBytes = 4

@@ -78,8 +78,19 @@ go build -o request .
 go run . -open=false
 ```
 
-Windows 可执行文件：
+Windows 可执行文件。两个文件是同一份程序，双击哪个就是哪种打开方式：
 
 ```bash
 GOOS=windows GOARCH=amd64 go build -o request.exe .
+GOOS=windows GOARCH=amd64 go build -ldflags "-H windowsgui" -o request-window.exe .
 ```
+
+`request.exe` 用浏览器打开。`request-window.exe` 用程序自己的窗口打开，里面还是这个页面。Windows 10/11 一般已经带了显示窗口用的 WebView2；没有的话安装 [WebView2 运行库](https://developer.microsoft.com/microsoft-edge/webview2/)。
+
+也可以只编一个文件，用参数选择：
+
+```bash
+request.exe -window
+```
+
+关掉窗口后程序会退出。macOS 和 Linux 上目前还是用浏览器打开。
