@@ -23,7 +23,6 @@ const I18N = {
     rawText: "文本",
     beautify: "格式化",
     invalidJSON: "JSON 无效",
-    noBody: "此请求没有请求体",
     resize: "拖动调整高度",
     respBody: "响应体",
     respHeaders: "响应头",
@@ -84,7 +83,6 @@ const I18N = {
     rawText: "Text",
     beautify: "Beautify",
     invalidJSON: "Invalid JSON",
-    noBody: "This request does not have a body",
     resize: "Drag to resize",
     respBody: "Body",
     respHeaders: "Headers",
@@ -535,7 +533,6 @@ document.querySelector(".tabs").addEventListener("click", (event) => {
 
 function showBodyMode(mode) {
   bodyMode = mode;
-  document.getElementById("body-none").hidden = mode !== "none";
   document.getElementById("body-formdata").hidden = mode !== "formdata";
   document.getElementById("body-urlencoded").hidden = mode !== "urlencoded";
   document.getElementById("body-raw").hidden = mode !== "raw";
