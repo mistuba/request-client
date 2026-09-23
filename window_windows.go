@@ -12,13 +12,14 @@ import (
 
 func openAppWindow(url string) error {
 	enableHighDPI()
+	width, height := defaultWindowSize()
 	w := webview2.NewWithOptions(webview2.WebViewOptions{
 		Debug:     false,
 		AutoFocus: true,
 		WindowOptions: webview2.WindowOptions{
 			Title:  "请求",
-			Width:  1200,
-			Height: 800,
+			Width:  width,
+			Height: height,
 			Center: true,
 		},
 	})
@@ -31,6 +32,36 @@ func openAppWindow(url string) error {
 	w.Navigate(url)
 	w.Run()
 	return nil
+}
+
+func defaultWindowSize() (uint, uint) {
+	var area struct {
+		Left, Top, Right, Bottom int32
+	}
+	user32 := syscall.NewLazyDLL("user32.dll")
+	spi := user32.NewProc("SystemParametersInfoW")
+	const spiGetWorkArea = 0x0030
+	r, _, _ := spi.Call(spiGetWorkArea, 0, uintptr(unsafe.Pointer(&area)), 0)
+	if r == 0 || area.Right <= area.Left || area.Bottom <= area.Top {
+		return 1440, 900
+	}
+	workW := int(area.Right - area.Left)
+	workH := int(area.Bottom - area.Top)
+	width := workW * 9 / 10
+	height := workH * 9 / 10
+	if width > workW-48 {
+		width = workW - 48
+	}
+	if height > workH-48 {
+		height = workH - 48
+	}
+	if width < 960 {
+		width = workW
+	}
+	if height < 640 {
+		height = workH
+	}
+	return uint(width), uint(height)
 }
 
 func enableHighDPI() {
