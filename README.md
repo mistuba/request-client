@@ -53,6 +53,15 @@ winget install GoLang.Go
 
 ## 运行
 
+有两种打开方式，页面是同一个：
+
+- 浏览器：在系统浏览器里打开 `http://127.0.0.1:47321`
+- 窗口：程序自己的窗口。目前只有 Windows 能用
+
+页面已经打进可执行文件里。拿到文件的电脑不需要这份代码，也不需要安装 Go。程序只监听本机，别的电脑上的浏览器打不开这个地址。
+
+### macOS、Linux
+
 在这个目录执行：
 
 ```bash
@@ -60,7 +69,7 @@ go build -o request .
 ./request
 ```
 
-浏览器会打开 `http://127.0.0.1:47321`。不想自动打开时：
+浏览器会打开。不想自动打开时：
 
 ```bash
 ./request -open=false
@@ -78,19 +87,41 @@ go build -o request .
 go run . -open=false
 ```
 
-Windows 可执行文件。两个文件是同一份程序，双击哪个就是哪种打开方式：
+### 在 Windows 里编译
+
+用 PowerShell 或命令提示符，进入这个目录：
+
+```powershell
+go build -o request.exe .
+go build -ldflags "-H windowsgui" -o request-window.exe .
+```
+
+当前目录会得到两个文件，双击哪个就是哪种：
+
+- `request.exe`：用浏览器打开
+- `request-window.exe`：用自己的窗口打开。关掉窗口后程序退出
+
+也可以只编译 `request.exe`，再用参数开窗口：
+
+```powershell
+.\request.exe -window
+```
+
+Windows 10/11 一般已经带了显示窗口用的 WebView2。窗口打不开时，安装 [WebView2 运行库](https://developer.microsoft.com/microsoft-edge/webview2/)。
+
+下载依赖超时的话，先换国内代理，再重新编译：
+
+```powershell
+go env -w GOPROXY=https://goproxy.cn,direct
+```
+
+### 在 macOS、Linux 里编译 Windows 文件
+
+本机是 macOS 或 Linux 时，也可以直接编出 Windows 用的文件，再拷到 Windows 上双击：
 
 ```bash
 GOOS=windows GOARCH=amd64 go build -o request.exe .
 GOOS=windows GOARCH=amd64 go build -ldflags "-H windowsgui" -o request-window.exe .
 ```
 
-`request.exe` 用浏览器打开。`request-window.exe` 用程序自己的窗口打开，里面还是这个页面。Windows 10/11 一般已经带了显示窗口用的 WebView2；没有的话安装 [WebView2 运行库](https://developer.microsoft.com/microsoft-edge/webview2/)。
-
-也可以只编一个文件，用参数选择：
-
-```bash
-request.exe -window
-```
-
-关掉窗口后程序会退出。macOS 和 Linux 上目前还是用浏览器打开。
+这两个 `.exe` 在 macOS、Linux 上不能运行。下载依赖超时同样先执行 `go env -w GOPROXY=https://goproxy.cn,direct`。
