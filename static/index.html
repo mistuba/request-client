@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light" />
-    <title>Request</title>
+    <title data-i18n="title">请求</title>
     <link rel="icon" href="favicon.svg" />
     <link rel="stylesheet" href="app.css" />
   </head>
@@ -13,57 +13,61 @@
       <header class="topbar">
         <div class="brand">
           <span class="logo" aria-hidden="true"></span>
-          <span>Request</span>
+          <span data-i18n="brand">请求</span>
+        </div>
+        <div class="lang-switch" role="group" data-i18n-aria="language" aria-label="语言">
+          <button type="button" data-lang="zh" class="active" aria-pressed="true">中文</button>
+          <button type="button" data-lang="en" aria-pressed="false">EN</button>
         </div>
       </header>
       <div class="workspace" id="workspace">
         <section class="request-pane" id="requestPane">
-          <h1 class="req-title">Untitled Request</h1>
+          <h1 class="req-title" data-i18n="untitled">未命名请求</h1>
           <div class="urlbar">
             <div class="urlbox">
               <div class="method" id="methodWrap">
                 <button type="button" class="method-btn GET" id="methodBtn" aria-haspopup="listbox" aria-expanded="false">GET</button>
                 <div class="method-menu" id="methodMenu" hidden role="listbox"></div>
               </div>
-              <input id="url" type="text" placeholder="Enter request URL" spellcheck="false" autocomplete="off" />
+              <input id="url" type="text" data-i18n-placeholder="urlPlaceholder" placeholder="输入请求地址" spellcheck="false" autocomplete="off" />
             </div>
-            <button type="button" id="send" title="Send (Ctrl+Enter)">Send</button>
+            <button type="button" id="send" data-i18n="send" data-i18n-title="sendTitle" title="发送（Ctrl+Enter）">发送</button>
           </div>
           <div class="tabs" role="tablist">
-            <button type="button" class="tab active" data-tab="params" role="tab">Params</button>
-            <button type="button" class="tab" data-tab="headers" role="tab">Headers</button>
-            <button type="button" class="tab" data-tab="body" role="tab">Body</button>
-            <label class="ssl" title="Verify TLS certificates">
+            <button type="button" class="tab active" data-tab="params" role="tab" data-i18n="params">参数</button>
+            <button type="button" class="tab" data-tab="headers" role="tab" data-i18n="headers">请求头</button>
+            <button type="button" class="tab" data-tab="body" role="tab" data-i18n="body">请求体</button>
+            <label class="ssl" data-i18n-title="sslTitle" title="校验 TLS 证书">
               <input type="checkbox" id="ssl" checked />
-              SSL verify
+              <span data-i18n="ssl">SSL 校验</span>
             </label>
           </div>
           <div class="tab-panels">
             <div id="panel-params" class="tab-panel active">
-              <h2>Query Params</h2>
+              <h2 data-i18n="queryParams">查询参数</h2>
               <div id="params-table"></div>
             </div>
             <div id="panel-headers" class="tab-panel">
-              <h2>Headers</h2>
+              <h2 data-i18n="headers">请求头</h2>
               <div id="headers-table"></div>
             </div>
             <div id="panel-body" class="tab-panel">
               <div class="body-modes">
-                <label><input type="radio" name="bodyMode" value="none" checked /> none</label>
-                <label><input type="radio" name="bodyMode" value="formdata" /> form-data</label>
-                <label><input type="radio" name="bodyMode" value="urlencoded" /> x-www-form-urlencoded</label>
-                <label><input type="radio" name="bodyMode" value="raw" /> raw</label>
+                <label><input type="radio" name="bodyMode" value="none" checked /> <span data-i18n="bodyNone">无</span></label>
+                <label><input type="radio" name="bodyMode" value="formdata" /> <span data-i18n="bodyForm">form-data</span></label>
+                <label><input type="radio" name="bodyMode" value="urlencoded" /> <span data-i18n="bodyUrlencoded">x-www-form-urlencoded</span></label>
+                <label><input type="radio" name="bodyMode" value="raw" /> <span data-i18n="bodyRaw">原始</span></label>
                 <select id="rawType" hidden>
                   <option value="json">JSON</option>
-                  <option value="text">Text</option>
+                  <option value="text" data-i18n="rawText">文本</option>
                   <option value="javascript">JavaScript</option>
                   <option value="html">HTML</option>
                   <option value="xml">XML</option>
                 </select>
-                <button type="button" id="beautify" class="linkish" hidden>Beautify</button>
-                <span id="jsonHint" class="hint-error" hidden>Invalid JSON</span>
+                <button type="button" id="beautify" class="linkish" data-i18n="beautify" hidden>格式化</button>
+                <span id="jsonHint" class="hint-error" data-i18n="invalidJSON" hidden>JSON 无效</span>
               </div>
-              <div id="body-none" class="body-empty">This request does not have a body</div>
+              <div id="body-none" class="body-empty" data-i18n="noBody">此请求没有请求体</div>
               <div id="body-formdata" class="body-fields" hidden></div>
               <div id="body-urlencoded" class="body-fields" hidden></div>
               <div id="body-raw" hidden>
@@ -74,15 +78,15 @@
             </div>
           </div>
         </section>
-        <div class="splitter" id="splitter" title="Drag to resize"></div>
+        <div class="splitter" id="splitter" data-i18n-title="resize" title="拖动调整高度"></div>
         <section class="response-pane">
           <div class="resp-head">
-            <button type="button" class="resp-tab active" data-rtab="body">Body</button>
-            <button type="button" class="resp-tab" data-rtab="headers" id="respHeadersTab">Headers</button>
+            <button type="button" class="resp-tab active" data-rtab="body" data-i18n="respBody">响应体</button>
+            <button type="button" class="resp-tab" data-rtab="headers" id="respHeadersTab" data-i18n="respHeaders">响应头</button>
             <div class="view-toggle" id="viewToggle" hidden>
-              <button type="button" data-view="pretty" class="active">Pretty</button>
-              <button type="button" data-view="raw">Raw</button>
-              <button type="button" id="copyBtn" class="linkish">Copy</button>
+              <button type="button" data-view="pretty" class="active" data-i18n="pretty">美化</button>
+              <button type="button" data-view="raw" data-i18n="rawView">原始</button>
+              <button type="button" id="copyBtn" class="linkish" data-i18n="copy">复制</button>
             </div>
             <div class="resp-stats" id="stats"></div>
           </div>

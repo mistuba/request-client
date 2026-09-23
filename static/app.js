@@ -1,5 +1,198 @@
 "use strict";
 
+const I18N = {
+  zh: {
+    title: "请求",
+    brand: "请求",
+    language: "语言",
+    untitled: "未命名请求",
+    urlPlaceholder: "输入请求地址",
+    send: "发送",
+    sendTitle: "发送（Ctrl+Enter）",
+    cancel: "取消",
+    params: "参数",
+    headers: "请求头",
+    body: "请求体",
+    ssl: "SSL 校验",
+    sslTitle: "校验 TLS 证书",
+    queryParams: "查询参数",
+    bodyNone: "无",
+    bodyForm: "form-data",
+    bodyUrlencoded: "x-www-form-urlencoded",
+    bodyRaw: "原始",
+    rawText: "文本",
+    beautify: "格式化",
+    invalidJSON: "JSON 无效",
+    noBody: "此请求没有请求体",
+    resize: "拖动调整高度",
+    respBody: "响应体",
+    respHeaders: "响应头",
+    pretty: "美化",
+    rawView: "原始",
+    copy: "复制",
+    key: "键",
+    value: "值",
+    description: "说明",
+    remove: "删除",
+    paramsCount: "参数 ({n})",
+    headersCount: "请求头 ({n})",
+    respHeadersCount: "响应头 ({n})",
+    emptyBefore: "点击 ",
+    emptyAfter: " 查看响应",
+    sending: "发送中…",
+    redirected: "已重定向到 ",
+    truncated: "响应超过显示上限，只显示前面一部分。",
+    imageResponse: "图片响应",
+    binaryResponse: "二进制响应，{size}",
+    responseImage: "响应图片",
+    enterURL: "请输入请求地址",
+    requestFailed: "请求失败",
+    canceled: "请求已取消",
+    unreachable: "无法连接本地程序",
+    errRead: "无法读取请求",
+    errMethod: "不支持的方法",
+    errURL: "请输入 http 或 https 地址",
+    errBody: "未知的请求体类型",
+    errTimeout: "请求超时",
+    errRefused: "无法连接：服务器拒绝了连接",
+    errHost: "无法解析主机",
+    errRedirects: "重定向超过 10 次，已停止",
+    errRedirectScheme: "重定向到了非 http 地址",
+    errHeader: "请求头无效：{name}",
+    errHeaderName: "请求头名称无效：{name}",
+    errTLS: "TLS 证书错误。如果信任该主机，可以关闭 SSL 校验。{detail}",
+  },
+  en: {
+    title: "Request",
+    brand: "Request",
+    language: "Language",
+    untitled: "Untitled Request",
+    urlPlaceholder: "Enter request URL",
+    send: "Send",
+    sendTitle: "Send (Ctrl+Enter)",
+    cancel: "Cancel",
+    params: "Params",
+    headers: "Headers",
+    body: "Body",
+    ssl: "SSL verify",
+    sslTitle: "Verify TLS certificates",
+    queryParams: "Query Params",
+    bodyNone: "none",
+    bodyForm: "form-data",
+    bodyUrlencoded: "x-www-form-urlencoded",
+    bodyRaw: "raw",
+    rawText: "Text",
+    beautify: "Beautify",
+    invalidJSON: "Invalid JSON",
+    noBody: "This request does not have a body",
+    resize: "Drag to resize",
+    respBody: "Body",
+    respHeaders: "Headers",
+    pretty: "Pretty",
+    rawView: "Raw",
+    copy: "Copy",
+    key: "Key",
+    value: "Value",
+    description: "Description",
+    remove: "Remove",
+    paramsCount: "Params ({n})",
+    headersCount: "Headers ({n})",
+    respHeadersCount: "Headers ({n})",
+    emptyBefore: "Click ",
+    emptyAfter: " to get a response",
+    sending: "Sending…",
+    redirected: "Redirected to ",
+    truncated: "Response is larger than the display limit. Showing the first part only.",
+    imageResponse: "Image response",
+    binaryResponse: "Binary response, {size}",
+    responseImage: "Response image",
+    enterURL: "Enter a request URL",
+    requestFailed: "Request failed",
+    canceled: "Request canceled",
+    unreachable: "Could not reach the local app",
+    errRead: "Could not read the request",
+    errMethod: "Unsupported method",
+    errURL: "Enter an http or https URL",
+    errBody: "Unknown body type",
+    errTimeout: "The request timed out",
+    errRefused: "Could not connect: the server refused the connection",
+    errHost: "Could not resolve the host",
+    errRedirects: "stopped after 10 redirects",
+    errRedirectScheme: "redirect to a non-http URL",
+    errHeader: "Invalid header {name}",
+    errHeaderName: "Invalid header name {name}",
+    errTLS: "TLS certificate error. Turn off SSL verify if you trust this host. {detail}",
+  },
+};
+
+const SERVER_ERRORS = {
+  "Could not read the request": "errRead",
+  "Unsupported method": "errMethod",
+  "Enter an http or https URL": "errURL",
+  "Enter a request URL": "enterURL",
+  "Unknown body type": "errBody",
+  "The request timed out": "errTimeout",
+  "Could not connect: the server refused the connection": "errRefused",
+  "Could not resolve the host": "errHost",
+  "stopped after 10 redirects": "errRedirects",
+  "redirect to a non-http URL": "errRedirectScheme",
+  "Request failed": "requestFailed",
+  "Request canceled": "canceled",
+  "Could not reach the local app": "unreachable",
+};
+
+let lang = "zh";
+try {
+  const saved = localStorage.getItem("request-lang");
+  if (saved === "en" || saved === "zh") lang = saved;
+} catch {
+  /* keep the default */
+}
+
+function t(key) {
+  return (I18N[lang] && I18N[lang][key]) || I18N.zh[key] || key;
+}
+
+function tf(key, vars) {
+  let text = t(key);
+  for (const [name, value] of Object.entries(vars || {})) {
+    text = text.replaceAll(`{${name}}`, value);
+  }
+  return text;
+}
+
+function translateError(message) {
+  if (!message) return "";
+  const known = SERVER_ERRORS[message];
+  if (known) return t(known);
+  if (message.startsWith("Invalid header name ")) return tf("errHeaderName", { name: message.slice("Invalid header name ".length) });
+  if (message.startsWith("Invalid header ")) return tf("errHeader", { name: message.slice("Invalid header ".length) });
+  const tls = "TLS certificate error. Turn off SSL verify if you trust this host. ";
+  if (message.startsWith(tls)) return tf("errTLS", { detail: message.slice(tls.length) });
+  return message;
+}
+
+function applyI18n() {
+  document.documentElement.lang = lang === "zh" ? "zh-CN" : "en";
+  for (const el of document.querySelectorAll("[data-i18n]")) {
+    el.textContent = t(el.getAttribute("data-i18n"));
+  }
+  for (const el of document.querySelectorAll("[data-i18n-title]")) {
+    el.title = t(el.getAttribute("data-i18n-title"));
+  }
+  for (const el of document.querySelectorAll("[data-i18n-placeholder]")) {
+    el.placeholder = t(el.getAttribute("data-i18n-placeholder"));
+  }
+  for (const el of document.querySelectorAll("[data-i18n-aria]")) {
+    el.setAttribute("aria-label", t(el.getAttribute("data-i18n-aria")));
+  }
+  for (const button of document.querySelectorAll(".lang-switch [data-lang]")) {
+    const on = button.dataset.lang === lang;
+    button.classList.toggle("active", on);
+    button.setAttribute("aria-pressed", String(on));
+  }
+}
+
 const METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"];
 
 const urlInput = document.getElementById("url");
@@ -42,16 +235,17 @@ function mountTable(parent, state) {
   const all = document.createElement("input");
   all.type = "checkbox";
   all.className = "check-all";
-  head.append(all, label("Key"), label("Value"));
-  if (state.description) head.append(label("Description"));
+  head.append(all, label("key"), label("value"));
+  if (state.description) head.append(label("description"));
   head.append(document.createElement("span"));
   const body = document.createElement("div");
   body.className = "kv-body";
   parent.append(head, body);
 
-  function label(text) {
+  function label(key) {
     const span = document.createElement("span");
-    span.textContent = text;
+    span.dataset.i18n = key;
+    span.textContent = t(key);
     return span;
   }
 
@@ -67,6 +261,9 @@ function mountTable(parent, state) {
   }
 
   function paint() {
+    for (const span of head.querySelectorAll("[data-i18n]")) {
+      span.textContent = t(span.dataset.i18n);
+    }
     body.replaceChildren();
     const rows = state.rows.concat([{ id: "ghost", enabled: true, key: "", value: "", description: "", ghost: true }]);
     for (const row of rows) {
@@ -77,14 +274,14 @@ function mountTable(parent, state) {
       check.type = "checkbox";
       check.className = "row-check";
       check.checked = row.enabled;
-      el.append(check, textField("key", "Key", row.key), textField("value", "Value", row.value));
-      if (state.description) el.append(textField("description", "Description", row.description || ""));
+      el.append(check, textField("key", "key", row.key), textField("value", "value", row.value));
+      if (state.description) el.append(textField("description", "description", row.description || ""));
       if (!row.ghost) {
         const del = document.createElement("button");
         del.type = "button";
         del.className = "del";
         del.textContent = "×";
-        del.setAttribute("aria-label", "Remove");
+        del.setAttribute("aria-label", t("remove"));
         el.append(del);
       } else {
         el.append(document.createElement("span"));
@@ -98,7 +295,7 @@ function mountTable(parent, state) {
     const input = document.createElement("input");
     input.type = "text";
     input.dataset.field = field;
-    input.placeholder = placeholder;
+    input.placeholder = t(placeholder);
     input.value = value;
     input.spellcheck = false;
     input.autocomplete = "off";
@@ -209,8 +406,8 @@ function updateCounts() {
   const bodyTab = document.querySelector('.tab[data-tab="body"]');
   const paramCount = params.filter((row) => row.enabled && row.key !== "").length;
   const headerCount = headers.filter((row) => row.enabled && row.key.trim() !== "").length;
-  paramsTab.textContent = paramCount ? `Params (${paramCount})` : "Params";
-  headersTab.textContent = headerCount ? `Headers (${headerCount})` : "Headers";
+  paramsTab.textContent = paramCount ? tf("paramsCount", { n: paramCount }) : t("params");
+  headersTab.textContent = headerCount ? tf("headersCount", { n: headerCount }) : t("headers");
   bodyTab.classList.toggle("dotted", bodyMode !== "none");
 }
 
@@ -409,9 +606,9 @@ function ensureScheme(raw) {
 }
 
 function setSending(sending) {
-  sendBtn.textContent = sending ? "Cancel" : "Send";
+  sendBtn.textContent = sending ? t("cancel") : t("send");
   sendBtn.classList.toggle("cancel", sending);
-  sendBtn.title = sending ? "Cancel" : "Send (Ctrl+Enter)";
+  sendBtn.title = sending ? t("cancel") : t("sendTitle");
 }
 
 function showRespTab(name) {
@@ -533,7 +730,7 @@ function tryPretty(text, contentType) {
 function renderStats() {
   statsEl.replaceChildren();
   viewToggle.hidden = true;
-  respHeadersTab.textContent = "Headers";
+  respHeadersTab.textContent = t("respHeaders");
   if (!last || last.error || last.sending) return;
   const status = document.createElement("span");
   status.className = `status ${statusClass(last.status)}`;
@@ -546,7 +743,7 @@ function renderStats() {
   size.textContent = formatSize(last.size);
   statsEl.append(status, time, size);
   const count = (last.headers || []).length;
-  respHeadersTab.textContent = count ? `Headers (${count})` : "Headers";
+  respHeadersTab.textContent = count ? tf("respHeadersCount", { n: count }) : t("respHeaders");
   viewToggle.hidden = respTab !== "body" || last.binary;
 }
 
@@ -556,7 +753,10 @@ function renderResponse() {
   if (!last) {
     const empty = document.createElement("div");
     empty.className = "empty-state";
-    empty.innerHTML = "Click <b>Send</b> to get a response";
+    empty.append(document.createTextNode(t("emptyBefore")));
+    const sendLabel = document.createElement("b");
+    sendLabel.textContent = t("send");
+    empty.append(sendLabel, document.createTextNode(t("emptyAfter")));
     respContent.append(empty);
     return;
   }
@@ -565,21 +765,21 @@ function renderResponse() {
     sending.className = "sending";
     const spinner = document.createElement("span");
     spinner.className = "spinner";
-    sending.append(spinner, document.createTextNode("Sending…"));
+    sending.append(spinner, document.createTextNode(t("sending")));
     respContent.append(sending);
     return;
   }
   if (last.error) {
     const box = document.createElement("div");
     box.className = "callout";
-    box.textContent = last.error;
+    box.textContent = translateError(last.error);
     respContent.append(box);
     return;
   }
   if (last.redirected && last.finalUrl) {
     const note = document.createElement("div");
     note.className = "redirect";
-    note.append("Redirected to ");
+    note.append(t("redirected"));
     const target = document.createElement("b");
     target.textContent = last.finalUrl;
     note.append(target);
@@ -588,7 +788,7 @@ function renderResponse() {
   if (last.truncated) {
     const banner = document.createElement("div");
     banner.className = "banner";
-    banner.textContent = "Response is larger than the display limit. Showing the first part only.";
+    banner.textContent = t("truncated");
     respContent.append(banner);
   }
   if (respTab === "headers") {
@@ -609,12 +809,12 @@ function renderResponse() {
   if (last.binary) {
     const note = document.createElement("div");
     note.className = "binary-note";
-    note.textContent = last.bodyBase64 ? "Image response" : `Binary response, ${formatSize(last.size)}`;
+    note.textContent = last.bodyBase64 ? t("imageResponse") : tf("binaryResponse", { size: formatSize(last.size) });
     respContent.append(note);
     if (last.bodyBase64 && /^image\/[a-z0-9.+-]+$/.test((last.contentType || "").split(";")[0].trim().toLowerCase())) {
       const img = document.createElement("img");
       img.className = "preview";
-      img.alt = "Response image";
+      img.alt = t("responseImage");
       img.src = `data:${last.contentType.split(";")[0].trim()};base64,${last.bodyBase64}`;
       respContent.append(img);
     }
@@ -707,5 +907,27 @@ splitter.addEventListener("mousedown", (event) => {
   window.addEventListener("mouseup", up);
 });
 
-renderResponse();
-updateCounts();
+function setLang(next) {
+  lang = next === "en" ? "en" : "zh";
+  try {
+    localStorage.setItem("request-lang", lang);
+  } catch {
+    /* ignore private mode */
+  }
+  applyI18n();
+  paramsTable.paint();
+  headersTable.paint();
+  formTable.paint();
+  urlencodedTable.paint();
+  updateCounts();
+  setSending(Boolean(controller));
+  renderResponse();
+}
+
+document.querySelector(".lang-switch").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-lang]");
+  if (!button || button.dataset.lang === lang) return;
+  setLang(button.dataset.lang);
+});
+
+setLang(lang);
