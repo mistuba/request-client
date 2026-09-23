@@ -293,7 +293,13 @@ body.dragging { cursor: row-resize; user-select: none; }
 
 .tab-panel { display: none; height: 100%; overflow: auto; padding-bottom: 12px; }
 .tab-panel.active { display: block; }
-#panel-body.active { display: flex; flex-direction: column; overflow: hidden; }
+#panel-body.active {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-left: 1px solid #d9d9d9;
+  border-right: 1px solid #d9d9d9;
+}
 
 h2 {
   margin: 12px 0 8px;
@@ -304,7 +310,7 @@ h2 {
 .kv-head, .kv-row {
   display: grid;
   grid-template-columns: 32px minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) 32px;
-  align-items: center;
+  align-items: stretch;
 }
 
 .kv-head.nodesc, .kv-row.nodesc {
@@ -312,22 +318,32 @@ h2 {
 }
 
 .kv-head {
-  color: #9a9a9a;
+  color: #6b6b6b;
   font-size: 12px;
-  padding-bottom: 4px;
+  background: #f6f6f6;
+  border-bottom: 1px solid #d9d9d9;
 }
 
-.kv-head span:nth-child(2),
-.kv-head span:nth-child(3),
-.kv-head span:nth-child(4) { padding-left: 8px; }
+.kv-head > :nth-child(n + 2),
+.kv-row > :nth-child(n + 2) {
+  border-left: 1px solid #d9d9d9;
+}
 
-.kv-row { border-bottom: 1px solid #f4f4f4; }
+.kv-head > span {
+  display: flex;
+  align-items: center;
+  min-height: 32px;
+  padding-left: 8px;
+}
+
+.kv-row { border-bottom: 1px solid #e4e4e4; }
 
 .kv-row input[type="text"] {
   width: 100%;
   min-width: 0;
   height: 32px;
   border: none;
+  border-left: 1px solid #d9d9d9;
   border-bottom: 1px solid transparent;
   background: transparent;
   padding: 0 8px;
@@ -339,12 +355,17 @@ h2 {
 .kv-row.off input[type="text"] { color: #a3a3a3; }
 .kv-row input::placeholder { color: #c4c4c4; }
 
-.kv-head input, .kv-row input[type="checkbox"] { justify-self: center; }
+.kv-head input, .kv-row input[type="checkbox"] { justify-self: center; align-self: center; }
 
 .del {
   width: 28px;
-  height: 28px;
+  height: auto;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: none;
+  border-left: 1px solid #d9d9d9;
   background: transparent;
   color: #b5b5b5;
   font-size: 16px;
@@ -361,8 +382,8 @@ h2 {
   gap: 16px;
   flex: none;
   flex-wrap: wrap;
-  padding: 8px 0;
-  border-bottom: 1px solid #ececec;
+  padding: 8px 12px;
+  border-bottom: 1px solid #d9d9d9;
   font-size: 13px;
 }
 
@@ -401,7 +422,7 @@ h2 {
   resize: none;
   outline: none;
   background: transparent;
-  padding: 8px 2px 16px;
+  padding: 8px 12px 16px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   font-size: 13px;
   line-height: 1.5;
@@ -443,8 +464,19 @@ h2 {
   display: flex;
   align-items: center;
   min-height: 42px;
-  border-bottom: 1px solid #ececec;
+  border: 1px solid #d9d9d9;
+  border-bottom: 1px solid #d9d9d9;
+  padding: 0 4px;
   gap: 4px;
+}
+
+#respContent {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  border-left: 1px solid #d9d9d9;
+  border-right: 1px solid #d9d9d9;
+  border-bottom: 1px solid #d9d9d9;
 }
 
 .view-toggle { display: flex; align-items: center; gap: 2px; margin-left: 8px; }
@@ -480,7 +512,6 @@ h2 {
 .status-4xx { color: #c2410c; }
 .status-5xx { color: #b42318; }
 
-#respContent { flex: 1; min-height: 0; overflow: auto; }
 
 .empty-state, .sending {
   height: 100%;
@@ -527,7 +558,7 @@ h2 {
 
 pre.code {
   margin: 0;
-  padding: 12px 2px 24px;
+  padding: 12px 12px 24px;
   white-space: pre-wrap;
   word-break: break-word;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
