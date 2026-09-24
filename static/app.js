@@ -21,6 +21,7 @@ const I18N = {
     bodyRaw: "原始",
     rawText: "文本",
     beautify: "格式化",
+    minify: "压缩",
     invalidJSON: "JSON 无效",
     resize: "拖动调整高度",
     respBody: "响应体",
@@ -80,6 +81,7 @@ const I18N = {
     bodyRaw: "raw",
     rawText: "Text",
     beautify: "Beautify",
+    minify: "Minify",
     invalidJSON: "Invalid JSON",
     resize: "Drag to resize",
     respBody: "Body",
@@ -199,8 +201,10 @@ const methodWrap = document.getElementById("methodWrap");
 const sslInput = document.getElementById("ssl");
 const rawType = document.getElementById("rawType");
 const beautifyBtn = document.getElementById("beautify");
+const minifyBtn = document.getElementById("minify");
 const jsonHint = document.getElementById("jsonHint");
 const rawBody = document.getElementById("rawBody");
+const rawHighlight = document.getElementById("rawHighlight");
 const respContent = document.getElementById("respContent");
 const statsEl = document.getElementById("stats");
 const viewToggle = document.getElementById("viewToggle");
@@ -536,8 +540,11 @@ function showBodyMode(mode) {
   document.getElementById("body-raw").hidden = mode !== "raw";
   const raw = mode === "raw";
   rawType.hidden = !raw;
-  beautifyBtn.hidden = !raw || rawType.value !== "json";
+  const json = raw && rawType.value === "json";
+  beautifyBtn.hidden = !json;
+  minifyBtn.hidden = !json;
   if (!raw) jsonHint.hidden = true;
+  paintRaw();
   updateCounts();
 }
 
@@ -548,21 +555,48 @@ for (const input of document.querySelectorAll('input[name="bodyMode"]')) {
 }
 
 rawType.addEventListener("change", () => {
-  beautifyBtn.hidden = rawType.value !== "json";
+  const json = rawType.value === "json";
+  beautifyBtn.hidden = !json;
+  minifyBtn.hidden = !json;
   jsonHint.hidden = true;
+  paintRaw();
 });
 
-beautifyBtn.addEventListener("click", () => {
+function rewriteJSON(space) {
   try {
-    rawBody.value = JSON.stringify(JSON.parse(rawBody.value), null, 2);
+    rawBody.value = JSON.stringify(JSON.parse(rawBody.value), null, space);
     jsonHint.hidden = true;
   } catch {
     jsonHint.hidden = false;
   }
-});
+  paintRaw();
+}
+
+beautifyBtn.addEventListener("click", () => rewriteJSON(2));
+minifyBtn.addEventListener("click", () => rewriteJSON(0));
+
+function paintRaw() {
+  const json = bodyMode === "raw" && rawType.value === "json";
+  rawBody.classList.toggle("plain", !json);
+  rawHighlight.hidden = !json;
+  if (!json) {
+    rawHighlight.textContent = "";
+    return;
+  }
+  const text = rawBody.value;
+  rawHighlight.innerHTML = highlightJSON(text) + (text.endsWith("\n") ? "\n" : "");
+  rawHighlight.scrollTop = rawBody.scrollTop;
+  rawHighlight.scrollLeft = rawBody.scrollLeft;
+}
 
 rawBody.addEventListener("input", () => {
   jsonHint.hidden = true;
+  paintRaw();
+});
+
+rawBody.addEventListener("scroll", () => {
+  rawHighlight.scrollTop = rawBody.scrollTop;
+  rawHighlight.scrollLeft = rawBody.scrollLeft;
 });
 
 urlInput.addEventListener("input", onURLInput);
