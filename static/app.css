@@ -87,6 +87,79 @@ body.dragging { cursor: row-resize; user-select: none; }
   overflow: hidden;
 }
 
+.req-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-top: 8px;
+  flex: none;
+  min-width: 0;
+}
+
+.req-tablist {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.req-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 200px;
+  flex: none;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  padding: 6px 8px 8px;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.req-tab.active {
+  color: var(--text);
+  border-bottom-color: var(--orange);
+  font-weight: 600;
+}
+
+.req-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.req-x {
+  color: #b5b5b5;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+}
+
+.req-tab:hover .req-x,
+.req-tab.active .req-x { color: var(--text); }
+
+.req-tool {
+  flex: none;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.req-tool:hover { background: #f4f4f4; color: var(--text); }
+
+#reqDup {
+  font-size: 12px;
+  color: var(--orange);
+}
+
 .urlbar {
   display: flex;
   gap: 8px;

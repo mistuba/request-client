@@ -29,6 +29,11 @@ const I18N = {
     pretty: "美化",
     rawView: "原始",
     copy: "复制",
+    newRequest: "新请求",
+    duplicateRequest: "复制",
+    duplicateRequestTitle: "复制当前请求",
+    closeRequest: "关闭",
+    requestN: "请求 {n}",
     key: "键",
     value: "值",
     description: "说明",
@@ -89,6 +94,11 @@ const I18N = {
     pretty: "Pretty",
     rawView: "Raw",
     copy: "Copy",
+    newRequest: "New request",
+    duplicateRequest: "Duplicate",
+    duplicateRequestTitle: "Duplicate this request",
+    closeRequest: "Close",
+    requestN: "Request {n}",
     key: "Key",
     value: "Value",
     description: "Description",
@@ -215,8 +225,8 @@ let bodyMode = "none";
 let respTab = "body";
 let respView = "pretty";
 let writingURL = false;
-let controller = null;
 let last = null;
+const inflight = new Map();
 let nextID = 1;
 
 const params = [];
@@ -448,9 +458,17 @@ function syncURLFromParams() {
     writingURL = false;
   }
   updateCounts();
+  refreshActiveLabel();
+}
+
+function refreshActiveLabel() {
+  const name = document.querySelector(`.req-tab[data-id="${activeId}"] .req-name`);
+  const sheet = sheets.find((item) => item.id === activeId);
+  if (name && sheet) name.textContent = sheetLabel(sheet);
 }
 
 function onURLInput() {
+  refreshActiveLabel();
   if (writingURL) return;
   const query = readQuery(urlInput.value);
   const current = params.filter((row) => row.enabled && row.key !== "").map((row) => ({ key: row.key, value: row.value }));
@@ -603,7 +621,7 @@ urlInput.addEventListener("input", onURLInput);
 urlInput.addEventListener("keydown", (event) => {
   if (event.key === "Enter") {
     event.preventDefault();
-    if (!controller) void send();
+    if (!inflight.has(activeId)) void send();
   }
 });
 
@@ -614,13 +632,14 @@ document.addEventListener("keydown", (event) => {
   }
   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
     event.preventDefault();
-    if (!controller) void send();
+    if (!inflight.has(activeId)) void send();
   }
 });
 
 sendBtn.addEventListener("click", () => {
-  if (controller) {
-    controller.abort();
+  const current = inflight.get(activeId);
+  if (current) {
+    current.abort();
     return;
   }
   void send();
@@ -883,33 +902,46 @@ async function send() {
     fields: activeFields().filter((row) => row.enabled && row.key.trim()).map((row) => ({ key: row.key.trim(), value: row.value })),
     insecure: !sslInput.checked,
   };
-  controller = new AbortController();
+  const sheetId = activeId;
+  const flight = new AbortController();
+  inflight.set(sheetId, flight);
   setSending(true);
   last = { sending: true };
   renderResponse();
+  let outcome;
+  let nextView = null;
   try {
     const response = await fetch("/api/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
-      signal: controller.signal,
+      signal: flight.signal,
     });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || data.error) {
-      last = { error: data.error || "Request failed" };
+      outcome = { error: data.error || "Request failed" };
     } else {
       const pretty = data.binary ? null : tryPretty(data.body || "", data.contentType);
-      last = { ...data, pretty };
-      if (pretty == null) respView = "raw";
-      else respView = "pretty";
+      outcome = { ...data, pretty };
+      nextView = pretty == null ? "raw" : "pretty";
+    }
+  } catch (error) {
+    outcome = { error: error.name === "AbortError" ? "Request canceled" : "Could not reach the local app" };
+  } finally {
+    inflight.delete(sheetId);
+  }
+  const sheet = sheets.find((item) => item.id === sheetId);
+  if (!sheet) return;
+  sheet.last = outcome;
+  if (nextView) sheet.respView = nextView;
+  if (sheetId === activeId) {
+    last = outcome;
+    if (nextView) {
+      respView = nextView;
       for (const button of viewToggle.querySelectorAll("[data-view]")) {
         button.classList.toggle("active", button.dataset.view === respView);
       }
     }
-  } catch (error) {
-    last = { error: error.name === "AbortError" ? "Request canceled" : "Could not reach the local app" };
-  } finally {
-    controller = null;
     setSending(false);
     renderResponse();
   }
@@ -936,6 +968,174 @@ splitter.addEventListener("mousedown", (event) => {
   window.addEventListener("mouseup", up);
 });
 
+let sheets = [];
+let activeId = 0;
+let sheetSeq = 0;
+
+function cloneRows(rows, fresh) {
+  return rows.map((row) => ({ ...row, id: fresh ? uid() : row.id }));
+}
+
+function replaceRows(target, rows) {
+  target.splice(0, target.length, ...cloneRows(rows, false));
+}
+
+function blankSheet() {
+  sheetSeq += 1;
+  return {
+    id: uid(),
+    n: sheetSeq,
+    method: "GET",
+    url: "",
+    ssl: true,
+    bodyMode: "none",
+    rawType: "json",
+    raw: "",
+    section: "params",
+    respTab: "body",
+    respView: "pretty",
+    last: null,
+    params: [],
+    headers: [],
+    formFields: [],
+    urlencodedFields: [],
+  };
+}
+
+function sheetLabel(sheet) {
+  const raw = (sheet.id === activeId ? urlInput.value : sheet.url).trim();
+  if (!raw) return tf("requestN", { n: sheet.n });
+  const text = raw.replace(/^[a-z][a-z0-9+.-]*:\/\//i, "");
+  return text.length > 22 ? `${text.slice(0, 21)}…` : text;
+}
+
+function snapshot() {
+  const sheet = sheets.find((item) => item.id === activeId);
+  if (!sheet) return;
+  sheet.method = method;
+  sheet.url = urlInput.value;
+  sheet.ssl = sslInput.checked;
+  sheet.bodyMode = bodyMode;
+  sheet.rawType = rawType.value;
+  sheet.raw = rawBody.value;
+  sheet.section = document.querySelector(".tab.active")?.dataset.tab || "params";
+  sheet.respTab = respTab;
+  sheet.respView = respView;
+  sheet.last = last;
+  sheet.params = cloneRows(params, false);
+  sheet.headers = cloneRows(headers, false);
+  sheet.formFields = cloneRows(formFields, false);
+  sheet.urlencodedFields = cloneRows(urlencodedFields, false);
+}
+
+function loadSheet(sheet) {
+  activeId = sheet.id;
+  setMethod(sheet.method);
+  writingURL = true;
+  urlInput.value = sheet.url;
+  writingURL = false;
+  sslInput.checked = sheet.ssl;
+  replaceRows(params, sheet.params);
+  replaceRows(headers, sheet.headers);
+  replaceRows(formFields, sheet.formFields);
+  replaceRows(urlencodedFields, sheet.urlencodedFields);
+  paramsTable.paint();
+  headersTable.paint();
+  formTable.paint();
+  urlencodedTable.paint();
+  rawType.value = sheet.rawType || "json";
+  rawBody.value = sheet.raw || "";
+  jsonHint.hidden = true;
+  const radio = document.querySelector(`input[name="bodyMode"][value="${sheet.bodyMode}"]`);
+  if (radio) radio.checked = true;
+  showBodyMode(sheet.bodyMode || "none");
+  showTab(sheet.section || "params");
+  respView = sheet.respView || "pretty";
+  for (const button of viewToggle.querySelectorAll("[data-view]")) {
+    button.classList.toggle("active", button.dataset.view === respView);
+  }
+  last = sheet.last;
+  showRespTab(sheet.respTab || "body");
+  setSending(inflight.has(sheet.id));
+  renderReqTabs();
+}
+
+function renderReqTabs() {
+  const list = document.getElementById("reqTabList");
+  list.replaceChildren();
+  for (const sheet of sheets) {
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "req-tab" + (sheet.id === activeId ? " active" : "");
+    tab.dataset.id = String(sheet.id);
+    const name = document.createElement("span");
+    name.className = "req-name";
+    name.textContent = sheetLabel(sheet);
+    const close = document.createElement("span");
+    close.className = "req-x";
+    close.textContent = "×";
+    close.setAttribute("aria-label", t("closeRequest"));
+    tab.append(name, close);
+    tab.addEventListener("click", (event) => {
+      if (event.target.closest(".req-x")) {
+        closeSheet(sheet.id);
+        return;
+      }
+      if (sheet.id === activeId) return;
+      snapshot();
+      loadSheet(sheet);
+    });
+    list.append(tab);
+  }
+  const active = list.querySelector(".req-tab.active");
+  if (active) active.scrollIntoView({ block: "nearest", inline: "nearest" });
+}
+
+function openSheet(sheet) {
+  snapshot();
+  sheets.push(sheet);
+  loadSheet(sheet);
+}
+
+function closeSheet(id) {
+  const flight = inflight.get(id);
+  if (flight) flight.abort();
+  if (sheets.length === 1) {
+    const fresh = blankSheet();
+    sheets = [fresh];
+    loadSheet(fresh);
+    return;
+  }
+  const index = sheets.findIndex((item) => item.id === id);
+  const closingActive = id === activeId;
+  sheets.splice(index, 1);
+  if (closingActive) loadSheet(sheets[Math.max(0, index - 1)]);
+  else renderReqTabs();
+}
+
+document.getElementById("reqAdd").addEventListener("click", () => openSheet(blankSheet()));
+document.getElementById("reqDup").addEventListener("click", () => {
+  snapshot();
+  const current = sheets.find((item) => item.id === activeId);
+  openSheet({
+    ...blankSheet(),
+    method: current.method,
+    url: current.url,
+    ssl: current.ssl,
+    bodyMode: current.bodyMode,
+    rawType: current.rawType,
+    raw: current.raw,
+    section: current.section,
+    respTab: "body",
+    respView: "pretty",
+    last: null,
+    params: cloneRows(current.params, true),
+    headers: cloneRows(current.headers, true),
+    formFields: cloneRows(current.formFields, true),
+    urlencodedFields: cloneRows(current.urlencodedFields, true),
+  });
+});
+
 function setLang(next) {
   lang = next === "en" ? "en" : "zh";
   try {
@@ -949,7 +1149,8 @@ function setLang(next) {
   formTable.paint();
   urlencodedTable.paint();
   updateCounts();
-  setSending(Boolean(controller));
+  setSending(inflight.has(activeId));
+  renderReqTabs();
   renderResponse();
 }
 
@@ -960,3 +1161,6 @@ document.querySelector(".lang-switch").addEventListener("click", (event) => {
 });
 
 setLang(lang);
+sheets = [blankSheet()];
+activeId = sheets[0].id;
+renderReqTabs();

@@ -21,6 +21,11 @@
       </header>
       <div class="workspace" id="workspace">
         <section class="request-pane" id="requestPane">
+          <div class="req-tabs">
+            <div class="req-tablist" id="reqTabList" role="tablist"></div>
+            <button type="button" id="reqAdd" class="req-tool" data-i18n-title="newRequest" data-i18n-aria="newRequest" title="新请求" aria-label="新请求">+</button>
+            <button type="button" id="reqDup" class="req-tool" data-i18n="duplicateRequest" data-i18n-title="duplicateRequestTitle" title="复制当前请求">复制</button>
+          </div>
           <div class="urlbar">
             <div class="urlbox">
               <div class="method" id="methodWrap">
