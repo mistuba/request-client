@@ -124,7 +124,7 @@ CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags "-H windowsgui" -o req
 
 ### 在 Windows 上双击
 
-当前目录会得到两个文件，拷到 Windows 上之后，双击哪个就是哪种：
+当前目录会得到两个文件，图标是橙色底、白色波浪。拷到 Windows 上之后，双击哪个就是哪种：
 
 - `request.exe`：用系统浏览器打开页面。关掉浏览器后，页面还在，原来的地址仍然可以访问。再双击一次，只是重新打开浏览器。要结束这个后台程序，在这个文件所在的目录打开 PowerShell 或命令提示符，执行 `.\request.exe -stop`。这条命令不会关掉 `request-window.exe`
 - `request-window.exe`：用程序自己的窗口打开。关掉窗口后程序退出

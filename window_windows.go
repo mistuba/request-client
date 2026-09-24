@@ -38,6 +38,7 @@ func openAppWindow(url string) error {
 			Title:  "请求",
 			Width:  width,
 			Height: height,
+			IconId: 1,
 			Center: true,
 		},
 	})
