@@ -63,9 +63,11 @@ winget install GoLang.Go
 在这个目录执行：
 
 ```bash
-go build -o request .
+./build-local.sh
 ./request
 ```
+
+`build-local.sh` 做的就是 `go build -o request .`，编出来的是当前系统能直接运行的程序。
 
 浏览器会打开。不想自动打开时：
 
