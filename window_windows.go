@@ -35,7 +35,7 @@ func openAppWindow(url string) error {
 		Debug:     false,
 		AutoFocus: true,
 		WindowOptions: webview2.WindowOptions{
-			Title:  "请求",
+			Title:  "",
 			Width:  width,
 			Height: height,
 			IconId: 1,
