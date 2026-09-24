@@ -94,18 +94,7 @@ go build -ldflags "-H windowsgui" -o request.exe .
 go build -ldflags "-H windowsgui" -o request-window.exe .
 ```
 
-当前目录会得到两个文件，双击哪个就是哪种：
-
-- `request.exe`：用浏览器打开，不留下命令窗口。关掉浏览器后程序仍在后台，再次双击会重新打开页面。结束它：`.\request.exe -stop`
-- `request-window.exe`：用自己的窗口打开。关掉窗口后程序退出
-
-也可以只编译 `request.exe`，再用参数开窗口：
-
-```powershell
-.\request.exe -window
-```
-
-Windows 10/11 一般已经带了显示窗口用的 WebView2。窗口打不开时，安装 [WebView2 运行库](https://developer.microsoft.com/microsoft-edge/webview2/)。
+命令里的 `-H windowsgui` 让双击 `request.exe` 时直接打开浏览器，不另外弹出命令窗口。
 
 下载依赖超时的话，先换国内代理，再重新编译：
 
@@ -115,7 +104,7 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 ### 在 macOS、Linux 里编译 Windows 文件
 
-本机是 macOS 或 Linux 时，也可以直接编出 Windows 用的文件，再拷到 Windows 上双击：
+本机是 macOS 或 Linux（包括装在 Windows 电脑上的 Ubuntu）时，也可以直接编出 Windows 用的文件，再拷到 Windows 上双击：
 
 ```bash
 GOOS=windows GOARCH=amd64 go build -ldflags "-H windowsgui" -o request.exe .
@@ -123,5 +112,22 @@ GOOS=windows GOARCH=amd64 go build -ldflags "-H windowsgui" -o request-window.ex
 ```
 
 这两个 `.exe` 在 macOS、Linux 上不能运行。下载依赖超时同样先执行 `go env -w GOPROXY=https://goproxy.cn,direct`。
+
+### 在 Windows 上双击
+
+当前目录会得到两个文件，拷到 Windows 上之后，双击哪个就是哪种：
+
+- `request.exe`：用系统浏览器打开页面。关掉浏览器后，页面还在，原来的地址仍然可以访问。再双击一次，只是重新打开浏览器。要结束程序，在这个文件所在的目录打开 PowerShell 或命令提示符，执行 `.\request.exe -stop`
+- `request-window.exe`：用程序自己的窗口打开。关掉窗口后程序退出
+
+也可以只编译 `request.exe`，再用参数开窗口，效果和双击 `request-window.exe` 一样：
+
+```powershell
+.\request.exe -window
+```
+
+Windows 10/11 一般已经带了显示窗口用的 WebView2。窗口打不开时，安装 [WebView2 运行库](https://developer.microsoft.com/microsoft-edge/webview2/)。
+
+如果双击 `request.exe` 后先出现一个命令窗口，关掉那个窗口页面就打不开，那是以前编出来的旧文件。用上面的命令重新编译，再换成新的 `request.exe`。
 
 编出来的 `request.exe` 和 `request-window.exe` 里已经包含页面。拿到文件的电脑不需要这份代码，也不需要安装 Go。程序只监听本机，别的电脑上的浏览器打不开这个地址。
