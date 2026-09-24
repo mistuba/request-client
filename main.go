@@ -48,10 +48,10 @@ func main() {
 	}
 	url := fmt.Sprintf("http://127.0.0.1:%d/", actual)
 	fmt.Printf("本地请求调试已启动：%s\n", url)
-	writeInstance(actual)
-	defer removeInstance()
 	mux := newMux()
 	if *window {
+		writeWindowPID()
+		defer removeWindowPID()
 		go serve(ln, mux)
 		if err := waitReady(ln.Addr().String()); err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -63,6 +63,8 @@ func main() {
 		}
 		return
 	}
+	writeInstance(actual)
+	defer removeInstance()
 	if *open {
 		go func() {
 			time.Sleep(200 * time.Millisecond)
@@ -115,12 +117,25 @@ type instanceInfo struct {
 	Port int `json:"port"`
 }
 
-func instancePath() string {
+var instanceRoot string
+
+func instanceDir() string {
+	if instanceRoot != "" {
+		return instanceRoot
+	}
 	dir, err := os.UserCacheDir()
 	if err != nil {
 		dir = os.TempDir()
 	}
-	return filepath.Join(dir, "request-client", "instance.json")
+	return filepath.Join(dir, "request-client")
+}
+
+func instancePath() string {
+	return filepath.Join(instanceDir(), "instance.json")
+}
+
+func windowPIDPath(pid int) string {
+	return filepath.Join(instanceDir(), fmt.Sprintf("window-%d.json", pid))
 }
 
 func writeInstance(port int) {
@@ -155,22 +170,100 @@ func removeInstance() {
 	_ = os.Remove(instancePath())
 }
 
-func stopRunning() error {
-	info, err := readInstance()
-	if err != nil || info.Pid <= 0 {
-		return fmt.Errorf("没有正在运行的程序")
+func writeWindowPID() {
+	path := windowPIDPath(os.Getpid())
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return
 	}
-	proc, err := os.FindProcess(info.Pid)
+	b, err := json.Marshal(instanceInfo{Pid: os.Getpid()})
 	if err != nil {
-		_ = os.Remove(instancePath())
+		return
+	}
+	_ = os.WriteFile(path, b, 0o644)
+}
+
+func removeWindowPID() {
+	_ = os.Remove(windowPIDPath(os.Getpid()))
+}
+
+func windowPIDs() map[int]bool {
+	out := map[int]bool{}
+	entries, err := os.ReadDir(instanceDir())
+	if err != nil {
+		return out
+	}
+	for _, entry := range entries {
+		name := entry.Name()
+		if !strings.HasPrefix(name, "window-") || !strings.HasSuffix(name, ".json") {
+			continue
+		}
+		b, err := os.ReadFile(filepath.Join(instanceDir(), name))
+		if err != nil {
+			continue
+		}
+		var info instanceInfo
+		if json.Unmarshal(b, &info) != nil || info.Pid <= 0 {
+			continue
+		}
+		if !processAlive(info.Pid) {
+			_ = os.Remove(filepath.Join(instanceDir(), name))
+			continue
+		}
+		out[info.Pid] = true
+	}
+	return out
+}
+
+var stopScanPort = 47321
+
+func stopRunning() error {
+	windows := windowPIDs()
+	killed := map[int]bool{}
+	tryKill := func(pid int) {
+		if pid <= 0 || pid == os.Getpid() || windows[pid] || killed[pid] || isWindowProcess(pid) {
+			return
+		}
+		proc, err := os.FindProcess(pid)
+		if err != nil || proc.Kill() != nil {
+			return
+		}
+		killed[pid] = true
+	}
+	info, err := readInstance()
+	if err == nil {
+		tryKill(info.Pid)
+		if windows[info.Pid] || killed[info.Pid] || !processAlive(info.Pid) {
+			_ = os.Remove(instancePath())
+		}
+	}
+	seen := map[int]bool{}
+	var ports []int
+	if err == nil {
+		ports = append(ports, info.Port)
+	}
+	if stopScanPort > 0 {
+		for port := stopScanPort; port < stopScanPort+20; port++ {
+			ports = append(ports, port)
+		}
+	}
+	for _, port := range ports {
+		if port <= 0 || seen[port] {
+			continue
+		}
+		seen[port] = true
+		if _, ok := runningURL(port); !ok {
+			continue
+		}
+		tryKill(listenerPID(port))
+	}
+	if len(killed) == 0 {
 		return fmt.Errorf("没有正在运行的程序")
 	}
-	if err := proc.Kill(); err != nil {
-		_ = os.Remove(instancePath())
-		return fmt.Errorf("没有正在运行的程序")
-	}
-	_ = os.Remove(instancePath())
 	return nil
+}
+
+func isWindowProcess(pid int) bool {
+	return windowByFileName(processBaseName(pid))
 }
 
 func windowByFileName(name string) bool {
