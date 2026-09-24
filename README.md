@@ -104,11 +104,18 @@ go env -w GOPROXY=https://goproxy.cn,direct
 
 ### 在 macOS、Linux 里编译 Windows 文件
 
-本机是 macOS 或 Linux（包括装在 Windows 电脑上的 Ubuntu）时，也可以直接编出 Windows 用的文件，再拷到 Windows 上双击：
+本机是 macOS 或 Linux（包括装在 Windows 电脑上的 Ubuntu）时，也可以直接编出 Windows 用的文件，再拷到 Windows 上双击。在这个目录执行：
 
 ```bash
-GOOS=windows GOARCH=amd64 go build -ldflags "-H windowsgui" -o request.exe .
-GOOS=windows GOARCH=amd64 go build -ldflags "-H windowsgui" -o request-window.exe .
+./build-request.sh
+./build-request-window.sh
+```
+
+两条可以分开跑。`build-request.sh` 得到 `request.exe`，`build-request-window.sh` 得到 `request-window.exe`。脚本做的就是：
+
+```bash
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags "-H windowsgui" -o request.exe .
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -ldflags "-H windowsgui" -o request-window.exe .
 ```
 
 这两个 `.exe` 在 macOS、Linux 上不能运行。下载依赖超时同样先执行 `go env -w GOPROXY=https://goproxy.cn,direct`。
