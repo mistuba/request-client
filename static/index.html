@@ -10,21 +10,16 @@
   </head>
   <body>
     <div id="app">
-      <header class="topbar">
-        <div class="brand">
-          <span data-i18n="brand">请求</span>
-        </div>
-        <div class="lang-switch" role="group" data-i18n-aria="language" aria-label="语言">
-          <button type="button" data-lang="zh" class="active" aria-pressed="true">中文</button>
-          <button type="button" data-lang="en" aria-pressed="false">EN</button>
-        </div>
-      </header>
       <div class="workspace" id="workspace">
         <section class="request-pane" id="requestPane">
           <div class="req-tabs">
             <div class="req-tablist" id="reqTabList" role="tablist"></div>
             <button type="button" id="reqAdd" class="req-tool" data-i18n-title="newRequest" data-i18n-aria="newRequest" title="新请求" aria-label="新请求">+</button>
             <button type="button" id="reqDup" class="req-tool" data-i18n="duplicateRequest" data-i18n-title="duplicateRequestTitle" title="复制当前请求">复制</button>
+            <div class="lang-switch" role="group" data-i18n-aria="language" aria-label="语言">
+              <button type="button" data-lang="zh" class="active" aria-pressed="true">中文</button>
+              <button type="button" data-lang="en" aria-pressed="false">EN</button>
+            </div>
           </div>
           <div class="urlbar">
             <div class="urlbox">
